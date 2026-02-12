@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const Register = () => {
+    const location = useLocation();
     const [formData, setFormData] = useState({
         name: '',
-        email: '',
+        email: location.state?.email || '',
         password: '',
         confirmPassword: '',
         role: 'student',
         studentId: '',
-        class: ''
+        class: '',
+        department: '',
+        year: '',
+        phone: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -118,39 +122,79 @@ const Register = () => {
                                 >
                                     <option value="student">Student</option>
                                     <option value="faculty">Faculty</option>
+                                    <option value="counselor">Counselor</option>
+                                    <option value="hod">Head of Department (HOD)</option>
                                 </select>
                             </div>
 
                             {/* Student-specific fields */}
                             {formData.role === 'student' && (
                                 <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex flex-col">
+                                            <label htmlFor="studentId" className="mb-2 font-semibold text-gray-800 text-sm">
+                                                Student ID
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="studentId"
+                                                name="studentId"
+                                                value={formData.studentId}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="ID Number"
+                                                className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base transition-all focus:outline-none focus:border-[#667eea] focus:ring-4 focus:ring-[#667eea]/10"
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <label htmlFor="year" className="mb-2 font-semibold text-gray-800 text-sm">
+                                                Year
+                                            </label>
+                                            <select
+                                                id="year"
+                                                name="year"
+                                                value={formData.year}
+                                                onChange={handleChange}
+                                                required
+                                                className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base transition-all focus:outline-none focus:border-[#667eea] focus:ring-4 focus:ring-[#667eea]/10"
+                                            >
+                                                <option value="">Select Year</option>
+                                                <option value="1">1st Year</option>
+                                                <option value="2">2nd Year</option>
+                                                <option value="3">3rd Year</option>
+                                                <option value="4">4th Year</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div className="flex flex-col">
-                                        <label htmlFor="studentId" className="mb-2 font-semibold text-gray-800 text-sm">
-                                            Student ID
+                                        <label htmlFor="department" className="mb-2 font-semibold text-gray-800 text-sm">
+                                            Department
                                         </label>
                                         <input
                                             type="text"
-                                            id="studentId"
-                                            name="studentId"
-                                            value={formData.studentId}
+                                            id="department"
+                                            name="department"
+                                            value={formData.department}
                                             onChange={handleChange}
                                             required
-                                            placeholder="Enter your student ID"
+                                            placeholder="e.g., Computer Science"
                                             className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base transition-all focus:outline-none focus:border-[#667eea] focus:ring-4 focus:ring-[#667eea]/10"
                                         />
                                     </div>
 
                                     <div className="flex flex-col">
-                                        <label htmlFor="class" className="mb-2 font-semibold text-gray-800 text-sm">
-                                            Class
+                                        <label htmlFor="phone" className="mb-2 font-semibold text-gray-800 text-sm">
+                                            Phone Number
                                         </label>
                                         <input
-                                            type="text"
-                                            id="class"
-                                            name="class"
-                                            value={formData.class}
+                                            type="tel"
+                                            id="phone"
+                                            name="phone"
+                                            value={formData.phone}
                                             onChange={handleChange}
-                                            placeholder="e.g., 10A, 11B"
+                                            placeholder="e.g., +1 234 567 8900"
                                             className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base transition-all focus:outline-none focus:border-[#667eea] focus:ring-4 focus:ring-[#667eea]/10"
                                         />
                                     </div>

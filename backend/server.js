@@ -26,8 +26,15 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/students', require('./routes/students'));
+app.use('/api/attendance', require('./routes/attendance'));
+app.use('/api/marks', require('./routes/marks'));
+app.use('/api/behavior/incidents', require('./routes/behaviorIncidents'));
+app.use('/api/analytics', require('./routes/analytics'));
+
+// Existing routes (keep if needed, or deprecate)
 app.use('/api/activity', require('./routes/activity'));
-app.use('/api/behavior', require('./routes/behavior'));
+app.use('/api/behavior', require('./routes/behavior')); // ML behavior
 app.use('/api/dashboard', require('./routes/dashboard'));
 
 // Health check

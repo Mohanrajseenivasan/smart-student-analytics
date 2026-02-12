@@ -32,6 +32,9 @@ const Login = () => {
 
         if (result.success) {
             navigate('/dashboard');
+        } else if (result.status === 404) {
+            // User not found, redirect to register
+            navigate('/register', { state: { email: formData.email } });
         } else {
             setError(result.message);
         }

@@ -50,7 +50,8 @@ export const behaviorAPI = {
 export const dashboardAPI = {
     getStats: () => api.get('/dashboard/stats'),
     getStudents: () => api.get('/dashboard/students'),
-    getAlerts: (params) => api.get('/dashboard/alerts', { params })
+    getAlerts: (params) => api.get('/dashboard/alerts', { params }),
+    getStudentStats: () => api.get('/dashboard/student-stats')
 };
 
 export default api;

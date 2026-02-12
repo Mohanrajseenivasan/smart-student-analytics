@@ -1,4 +1,4 @@
-const { sequelize, User, Student, Activity, Alert } = require('./models');
+const { sequelize, User, Credential, Student, Activity, Alert } = require('./models');
 
 async function checkData() {
     try {
@@ -19,10 +19,14 @@ async function checkData() {
         console.log('\n--- Sample Data ---\n');
 
         if (usersCount > 0) {
-            const sampleUsers = await User.findAll({ limit: 3 });
+            const sampleUsers = await User.findAll({
+                limit: 3,
+                include: [{ model: Credential, as: 'credential' }]
+            });
             console.log(`Sample Users (${sampleUsers.length}):`);
             sampleUsers.forEach(user => {
-                console.log(`  - ${user.username} (${user.email}) - Role: ${user.role}`);
+                const email = user.credential ? user.credential.email : 'No Email';
+                console.log(`  - ${user.name} (${email}) - Role: ${user.role}`);
             });
         } else {
             console.log('No users found in database.');

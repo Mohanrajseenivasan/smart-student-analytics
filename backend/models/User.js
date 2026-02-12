@@ -1,5 +1,4 @@
 const { DataTypes } = require('sequelize');
-const bcrypt = require('bcryptjs');
 const { sequelize } = require('../config/db');
 
 const User = sequelize.define('User', {
@@ -15,26 +14,8 @@ const User = sequelize.define('User', {
             notEmpty: { msg: 'Please provide name' }
         }
     },
-    email: {
-        type: DataTypes.STRING(100),
-        allowNull: false,
-        unique: true,
-        validate: {
-            isEmail: { msg: 'Please provide valid email' }
-        }
-    },
-    password: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-        validate: {
-            len: {
-                args: [6],
-                msg: 'Password must be at least 6 characters'
-            }
-        }
-    },
     role: {
-        type: DataTypes.ENUM('student', 'faculty', 'admin'),
+        type: DataTypes.ENUM('student', 'faculty', 'admin', 'counselor', 'hod'),
         defaultValue: 'student'
     },
     studentId: {
@@ -64,33 +45,7 @@ const User = sequelize.define('User', {
     }
 }, {
     tableName: 'users',
-    timestamps: true,
-    hooks: {
-        beforeCreate: async (user) => {
-            if (user.password) {
-                const salt = await bcrypt.genSalt(12);
-                user.password = await bcrypt.hash(user.password, salt);
-            }
-        },
-        beforeUpdate: async (user) => {
-            if (user.changed('password')) {
-                const salt = await bcrypt.genSalt(12);
-                user.password = await bcrypt.hash(user.password, salt);
-            }
-        }
-    }
+    timestamps: true
 });
-
-// Instance method to compare password
-User.prototype.comparePassword = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
-};
-
-// Don't select password by default
-User.prototype.toJSON = function () {
-    const values = Object.assign({}, this.get());
-    delete values.password;
-    return values;
-};
 
 module.exports = User;
