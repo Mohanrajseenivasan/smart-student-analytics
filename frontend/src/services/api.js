@@ -51,7 +51,8 @@ export const dashboardAPI = {
     getStats: () => api.get('/dashboard/stats'),
     getStudents: () => api.get('/dashboard/students'),
     getAlerts: (params) => api.get('/dashboard/alerts', { params }),
-    getStudentStats: () => api.get('/dashboard/student-stats')
+    getStudentStats: () => api.get('/dashboard/student-stats'),
+    getChildStats: () => api.get('/dashboard/child-stats')
 };
 
 export default api;

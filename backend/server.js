@@ -3,6 +3,9 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const path = require('path');
+const path = require('path');
+const path = require('path');
 const { connectDB } = require('./config/db');
 const models = require('./models');
 
@@ -36,6 +39,14 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/activity', require('./routes/activity'));
 app.use('/api/behavior', require('./routes/behavior')); // ML behavior
 app.use('/api/dashboard', require('./routes/dashboard'));
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Catch all handler: send back React's index.html file
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // Health check
 app.get('/health', (req, res) => {

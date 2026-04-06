@@ -23,6 +23,10 @@ Credential.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasOne(Student, { foreignKey: 'userId', as: 'studentProfile' });
 Student.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// Parent -> Student relationship
+User.hasMany(Student, { foreignKey: 'parentId', as: 'children' });
+Student.belongsTo(User, { foreignKey: 'parentId', as: 'parent' });
+
 // Student -> Attendance
 Student.hasMany(Attendance, { foreignKey: 'studentId', as: 'attendanceRecords' });
 Attendance.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });

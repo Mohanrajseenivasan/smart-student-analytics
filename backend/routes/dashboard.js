@@ -9,13 +9,14 @@ const Goal = require('../models/Goal');
 const Achievement = require('../models/Achievement');
 const Assignment = require('../models/Assignment');
 const Event = require('../models/Event');
+const Activity = require('../models/Activity');
 const { sequelize } = require('../config/db');
 const { Op } = require('sequelize');
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard/stats
-// @access  Private (Faculty/Admin)
-router.get('/stats', protect, authorize('faculty', 'admin', 'counselor', 'hod'), async (req, res) => {
+// @access  Private (Teacher/Admin)
+router.get('/stats', protect, authorize('teacher', 'admin'), async (req, res) => {
     try {
         const totalStudents = await User.count({ where: { role: 'student' } });
 
@@ -63,8 +64,8 @@ router.get('/stats', protect, authorize('faculty', 'admin', 'counselor', 'hod'),
 
 // @desc    Get all students with latest behavior data
 // @route   GET /api/dashboard/students
-// @access  Private (Faculty/Admin/Counselor/HOD)
-router.get('/students', protect, authorize('faculty', 'admin', 'counselor', 'hod'), async (req, res) => {
+// @access  Private (Teacher/Admin)
+router.get('/students', protect, authorize('teacher', 'admin'), async (req, res) => {
     try {
         const students = await User.findAll({
             where: { role: 'student' },
@@ -97,8 +98,8 @@ router.get('/students', protect, authorize('faculty', 'admin', 'counselor', 'hod
 
 // @desc    Get alerts
 // @route   GET /api/dashboard/alerts
-// @access  Private (Faculty/Admin/Counselor/HOD)
-router.get('/alerts', protect, authorize('faculty', 'admin', 'counselor', 'hod'), async (req, res) => {
+// @access  Private (Teacher/Admin)
+router.get('/alerts', protect, authorize('teacher', 'admin'), async (req, res) => {
     try {
         const { status = 'active', limit = 20 } = req.query;
 
@@ -145,7 +146,7 @@ router.get('/student-stats', protect, authorize('student'), async (req, res) => 
             goals,
             achievements,
             assignments,
-            events
+            activities
         ] = await Promise.all([
             // Behavior Metrics
             BehaviorData.findOne({
@@ -178,13 +179,11 @@ router.get('/student-stats', protect, authorize('student'), async (req, res) => 
                 order: [['dueDate', 'ASC']],
                 limit: 5
             }),
-            // College Events (Global)
-            Event.findAll({
-                where: {
-                    eventDate: { [Op.gte]: new Date() }
-                },
-                order: [['eventDate', 'ASC']],
-                limit: 3
+            // Recent Activities
+            Activity.findAll({
+                where: { userId: req.user.id },
+                order: [['createdAt', 'DESC']],
+                limit: 5
             })
         ]);
 
@@ -197,11 +196,73 @@ router.get('/student-stats', protect, authorize('student'), async (req, res) => 
                 goals,
                 achievements,
                 assignments,
-                events
+                activities
             }
         });
     } catch (error) {
         console.error('Dashboard Error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// @desc    Get dashboard for parent showing child stats
+// @route   GET /api/dashboard/child-stats
+// @access  Private (Parent)
+router.get('/child-stats', protect, authorize('parent'), async (req, res) => {
+    try {
+        const parentId = req.user.id;
+        
+        // Find the first student mapped to this parent
+        const student = await Student.findOne({
+            where: { parentId },
+            include: [{ model: User, as: 'user', attributes: ['name'] }]
+        });
+
+        if (!student) {
+            return res.json({ success: true, data: { noChild: true } });
+        }
+
+        const studentId = student.id;
+        const studentUserId = student.userId;
+
+        // Fetch behavior, attendance, alerts, and incidents (remarks)
+        const [
+            behaviorData,
+            alerts,
+            remarks
+        ] = await Promise.all([
+            BehaviorData.findOne({
+                where: { userId: studentUserId },
+                order: [['date', 'DESC']]
+            }),
+            Alert.findAll({
+                where: { userId: studentUserId, status: 'active' },
+                order: [['createdAt', 'DESC']],
+                limit: 5
+            }),
+            sequelize.models.Behavior.findAll({
+                where: { studentId },
+                order: [['date', 'DESC']],
+                limit: 5
+            })
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                student: {
+                    id: student.id,
+                    name: student.user.name,
+                    registerNumber: student.registerNumber,
+                    year: student.year
+                },
+                behaviorData,
+                alerts,
+                incidents: remarks
+            }
+        });
+    } catch (error) {
+        console.error('Child Stats Error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
